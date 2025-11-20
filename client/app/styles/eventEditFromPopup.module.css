@@ -1,0 +1,29 @@
+
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+    
+.cancelBtn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 8px;
+    background-color: #ccc;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.saveBtn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 8px;
+    background-color: #6952e0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}

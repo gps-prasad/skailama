@@ -1,0 +1,103 @@
+.card {
+    flex:1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    margin-bottom: 24px;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.userName {
+    display: flex;
+    justify-content: start;
+    gap: 5px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.eventsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.eventsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.eventItem {
+    display: flex;
+    justify-content: start;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.eventItem hr {
+    margin: 10px 0;
+}
+
+.eventItemDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.eventItemDetails p:nth-child(odd) {
+    font-weight: 500;
+}
+
+.eventItemDetailsRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.eventLogs {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    gap: 5px;
+}
+
+.eventItemDetailsTime {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.eventLogs p {
+    font-size: 12px;
+    font-weight: 200;
+    color: #666;
+}
+
+.eventActions {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.eventActions button {
+    flex: 1;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+

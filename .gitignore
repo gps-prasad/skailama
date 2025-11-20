@@ -1,0 +1,46 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js build artifacts
+.next/
+out/ # If you are exporting a static site
+
+# IDE-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Test coverage reports
+coverage/
+
+# Uploads or user-generated content (if not tracked separately)
+# For example, if you have an 'uploads' directory for user files
+# uploads/
+
+# Specific to your project (optional)
+# For example, if you have a separate 'dist' or 'build' folder for your backend
+# server/dist/
+# server/build/
