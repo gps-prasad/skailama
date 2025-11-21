@@ -13,8 +13,10 @@ import { useEffect, useState } from "react";
 
 export default function EventLogsPopup({open, setOpen,event}) {
     const [eventlogs, setEventlogs] = useState([])
+    const [loading, setLoading] = useState(true)
     const fetchEventLogs = async (eventId) => {
       try {
+        setLoading(true)
         const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/logs/${eventId}`, {
           method: 'GET',
           headers: {
@@ -34,21 +36,28 @@ export default function EventLogsPopup({open, setOpen,event}) {
       } catch (error) {
         setEventlogs([])
         console.error(error)
+      } finally {
+        setLoading(false)
       }
     }
 
     useEffect(() => {
-      if (!open || !event?._id) return
-      fetchEventLogs(event?._id)
-    }, [open])
+      if (open && event?._id) {
+        fetchEventLogs(event._id)
+        return
+      }
 
+    }, [open, event?._id])
     return (
+      <> 
         <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
             <DialogHeader>
             <DialogTitle>Event update history</DialogTitle>
             <DialogDescription  className={styles.logsList}>
-                {eventlogs?.length === 0 ? (
+                {loading ? (
+                    <span className="loading"></span>
+                ) : !loading && eventlogs?.length === 0 ? (
                     <span>No logs available</span>
                 ) : (
                     eventlogs.map((log) => (
@@ -62,5 +71,6 @@ export default function EventLogsPopup({open, setOpen,event}) {
             </DialogHeader>
         </DialogContent>
         </Dialog>
+        </>
     )
 }

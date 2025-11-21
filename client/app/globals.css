@@ -129,3 +129,12 @@
   }
 }
     
+.loading {
+  @apply animate-spin;
+  margin: auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  border-color: var(--primary) transparent var(--primary) transparent;
+}

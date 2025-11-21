@@ -17,7 +17,6 @@ router.post("/addProfile", async (req, res) => {
 
 router.get("/getProfiles", async (req, res) => {
     try {
-        console.log('s')
         const profiles = await Profile.find({ name: { $regex: req.query.name || "", $options: "i" } }).limit(5);
         res.status(200).json({status: true, message: "Profiles fetched successfully", profiles });
     } catch (error) {

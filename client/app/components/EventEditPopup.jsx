@@ -134,7 +134,7 @@ export default function EventEditPopup({open, setOpen, event}) {
             <DialogTitle>Event Edit</DialogTitle>
             <DialogDescription className={EventLogsStyle.logsList}>
               {loading ? (
-                <span>Loading...</span>
+                <span className="loading"></span>
               ) : (
               <div className={EventStyle.formFields}>
               <div className={EventStyle.formGroup}>
