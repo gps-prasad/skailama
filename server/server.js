@@ -12,7 +12,14 @@ connectDB();
 
 const port = 3001;
 const app = express();
-app.use(cors({origin: "*"}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use('*',cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -28,3 +35,6 @@ app.use('/api/logs', Logs);
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
+
+
+export default app;
