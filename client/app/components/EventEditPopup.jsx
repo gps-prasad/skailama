@@ -9,51 +9,96 @@ import EventLogsStyle from "../styles/eventLogsPopup.module.css"
 import EventStyle from "../styles/eventForm.module.css"
 import EventEditStyle from "../styles/eventEditFromPopup.module.css"
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { fetchProfiles } from "../store/features/profilesSlice"
+import { useEffect, useState, useCallback } from "react";
 import TypeHead from "./TypeHead";
 import timezones from "../constants/timeZones";
 import dayjs from "dayjs";
-import { updateEvent } from "../store/features/eventsSlice";
 import { toast } from "sonner";
+import DateTimePicker from "./DateTimePicker";
+import { dateTimeLocalToUTC } from "../../lib/helpers";
 
-export default function EventEditPopup({open, setOpen}) {
-    const dispatch = useDispatch()
-    const event = useSelector((state) => state.events.editEvent);
+export default function EventEditPopup({open, setOpen, event}) {
+    const [loading, setLoading] = useState(false)
     const profiles = useSelector((state) => state.profiles.profiles);
-    useEffect(() => {
-        dispatch(fetchProfiles());
-    }, []);
     const [eventData, setEventData] = useState({
-        _id: event._id,
-        profiles: event.profiles,
-        timezone: event.timezone,
-        eventStartDate: event.eventStartDate,
-        eventEndDate: event.eventEndDate,
-        eventStartTime: event.eventStartTime,
-        eventEndTime: event.eventEndTime
+      _id: "",
+      profiles: [],
+      timezone: "",
+      eventStartDate: "",
+      eventStartTime: "",
+      eventEndDate: "",
+      eventEndTime: "",
     })
-    useEffect(()=>{
-      setEventData(()=>({
-        _id: event._id,
-        profiles: event.profiles,
-        timezone: event.timezone,
-        eventStartDate: dayjs.utc(event.eventStartDate).tz(event.timeZone).format("YYYY-MM-DD"),
-        eventStartTime: dayjs.utc(event.eventStartDate).tz(event.timeZone).format("HH:mm:ss.sss"),
-        eventEndDate: dayjs.utc(event.eventEndDate).tz(event.timeZone).format("YYYY-MM-DD"),
-        eventEndTime: dayjs.utc(event.eventEndDate).tz(event.timeZone).format("HH:mm:ss.sss"),
-      }))
-    },[event])
+
     const setSelectedValues = (res) => {
       setEventData({...eventData, profiles: res})
     }
+
+    const fetchEventData = useCallback(async (eventId) => {
+      try {
+        setLoading(true)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/event/${eventId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        const data = await response.json()
+        if (data.status === false) {
+          console.error(data.message)
+          return
+        }
+        const event = data.event
+        console.log(event)
+        setEventData({
+          _id: event._id,
+          profiles: event.profiles,
+          timezone: event.timezone,
+          eventStartDate: dayjs.utc(event.eventStartDate).tz(event.timeZone).format("YYYY-MM-DD"),
+          eventStartTime: dayjs.utc(event.eventStartDate).tz(event.timeZone).format("HH:mm:ss.sss"),
+          eventEndDate: dayjs.utc(event.eventEndDate).tz(event.timeZone).format("YYYY-MM-DD"),
+          eventEndTime: dayjs.utc(event.eventEndDate).tz(event.timeZone).format("HH:mm:ss.sss"),
+        })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }, [])
+
+    const updateEvent = useCallback(async (event) => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/updateEvent`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(event),
+        })
+        const data = await response.json()
+        if (data.status === false) {
+          console.error(data.message)
+          return
+        }
+        toast.success("Event updated successfully")
+      } catch (error) {
+        console.error(error)
+        toast.error("Event updation failed")
+      }
+    }, [])
+
+    useEffect(() => {
+      if (!event._id || !open) return
+      fetchEventData(event._id)
+    }, [event._id,open])
+
     const onSubmit = () => {
       if (eventData.profiles.length === 0 || eventData.timezone === "" || eventData.eventStartDate === "" || eventData.eventStartTime === "" || eventData.eventEndDate === "" || eventData.eventEndTime === "") {
         toast("Please fill all the fields")
         return
       }
-      const startDate = dayjs.tz(eventData.eventStartDate + " " + eventData.eventStartTime, eventData.timezone).utc().format("YYYY-MM-DDTHH:mm:ss[.000Z]");
-      const endDate = dayjs.tz(eventData.eventEndDate + " " + eventData.eventEndTime, eventData.timezone).utc().format("YYYY-MM-DDTHH:mm:ss[.000Z]");
+      const {startDate, endDate} = dateTimeLocalToUTC(eventData.eventStartDate, eventData.eventStartTime, eventData.eventEndDate, eventData.eventEndTime, eventData.timezone)
+      console.log(startDate, endDate)
       if (startDate > endDate) {
         toast("End date and time must be greater than start date and time")
         return
@@ -65,8 +110,22 @@ export default function EventEditPopup({open, setOpen}) {
         eventStartDate: startDate,
         eventEndDate: endDate,
       }
-      dispatch(updateEvent(event))
+      console.log(event)
+      updateEvent(event)
       setOpen(false)
+    }
+
+    const onCancel = () => {
+      setOpen(()=>false)
+      setEventData({
+        _id: "",
+        profiles: [],
+        timezone: "",
+        eventStartDate: "",
+        eventStartTime: "",
+        eventEndDate: "",
+        eventEndTime: "",
+      })
     }
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -74,48 +133,45 @@ export default function EventEditPopup({open, setOpen}) {
             <DialogHeader>
             <DialogTitle>Event Edit</DialogTitle>
             <DialogDescription className={EventLogsStyle.logsList}>
-      <p className={EventStyle.formFields}>
-      <p className={EventStyle.formGroup}>
-        <p className={EventStyle.formItem}>
-        <label>Profiles</label>
-        <TypeHead profiles={profiles} selectedValues={eventData.profiles} setSelectedValues={setSelectedValues}/>
-        </p>
-      </p>
-      
-      <p className={EventStyle.formGroup}>
-        <p className={EventStyle.formItem}>
-      <label>Timezone</label>
-      <select className={EventStyle.fieldInput} value={eventData.timezone} onChange={(e) => setEventData({...eventData, timezone: e.target.value})}>
-        {timezones.map((timezone) => (
-          <option key={timezone.value} value={timezone.value}>
-            {timezone.label}
-          </option>
-        ))}
-      </select>
-      </p>
-      </p>
-      <p className={EventStyle.formGroup}>
-      <p className={EventStyle.formItem}>
-          <label>Start Date & Time</label>
-          <p className={EventStyle.formDateFieldInputs}>
-            <input type="date" max={eventData.eventEndDate} className={EventStyle.fieldInput} value={eventData.eventStartDate} onChange={(e) => setEventData({...eventData, eventStartDate: e.target.value})}/>
-            <input type="time" max={eventData.eventEndDate === eventData.eventStartDate ? eventData.eventEndTime : ""} value={eventData.eventStartTime} onChange={(e) => setEventData({...eventData, eventStartTime: e.target.value})} className={EventStyle.fieldInput}/>
-          </p>
-      </p>
-      </p>
-      <p className={EventStyle.formGroup}></p>
-      <p className={EventStyle.formItem}>
-          <label>End Date & Time</label>
-          <p className={EventStyle.formDateFieldInputs}>  
-            <input type="date" min={eventData.eventStartDate} className={EventStyle.fieldInput} value={eventData.eventEndDate} onChange={(e) => setEventData({...eventData, eventEndDate: e.target.value})}/>
-            <input type="time" min={eventData.eventStartDate === eventData.eventEndDate ? eventData.eventStartTime : ""} value={eventData.eventEndTime} onChange={(e) => setEventData({...eventData, eventEndTime: e.target.value})} className={EventStyle.fieldInput}/>
-          </p>
-      </p>
-      </p>
-      <p className={EventEditStyle.formActions}>
-        <button className={EventEditStyle.cancelBtn} onClick={() => setOpen(false)}>Cancel</button>
-        <button className={EventEditStyle.saveBtn} onClick={onSubmit}>Save Changes</button>
-      </p>
+              {loading ? (
+                <span>Loading...</span>
+              ) : (
+              <div className={EventStyle.formFields}>
+              <div className={EventStyle.formGroup}>
+                <div className={EventStyle.formItem}>
+                <label>Profiles</label>
+                <TypeHead profiles={profiles} selectedValues={eventData.profiles} setSelectedValues={setSelectedValues}/>
+                </div>
+              </div>
+              
+              <div className={EventStyle.formGroup}>
+                <div className={EventStyle.formItem}>
+              <label>Timezone</label>
+              <select className={EventStyle.fieldInput} value={eventData.timezone} onChange={(e) => setEventData({...eventData, timezone: e.target.value})}>
+                {timezones.map((timezone) => (
+                  <option key={timezone.value} value={timezone.value}>
+                    {timezone.label}
+                  </option>
+                ))}
+              </select>
+              </div>
+              </div>
+              <div className={EventStyle.formGroup}>
+              <div className={EventStyle.formItem}>
+                <DateTimePicker label="Start Date & Time" date={eventData.eventStartDate} time={eventData.eventStartTime} setTime={(time) => setEventData({...eventData, eventStartTime: time})} setDate={(date) => setEventData({...eventData, eventStartDate: date})} dateMin={new Date()} dateMax={eventData.eventEndDate}/>
+              </div>
+              </div>
+              <div className={EventStyle.formGroup}>
+              <div className={EventStyle.formItem}>
+                <DateTimePicker label="End Date & Time" date={eventData.eventEndDate} time={eventData.eventEndTime} setTime={(time) => setEventData({...eventData, eventEndTime: time})} setDate={(date) => setEventData({...eventData, eventEndDate: date})} dateMin={eventData.eventStartDate}/>
+              </div>
+              </div>
+              <div className={EventEditStyle.formActions}>
+                <button className={EventEditStyle.cancelBtn} onClick={onCancel}>Cancel</button>
+                <button className={EventEditStyle.saveBtn} onClick={onSubmit}>Save Changes</button>
+              </div>
+              </div>
+              )}
             </DialogDescription>    
             </DialogHeader>
         </DialogContent>

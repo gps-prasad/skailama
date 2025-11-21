@@ -1,21 +1,8 @@
 import express from "express";
 import Event from "../models/eventModel.js";
 import Logs from "../models/logsModel.js";
-import Profile from "../models/profileModel.js";
 
 const router = express.Router();
-
-router.get("/:profileId", async (req, res) => {
-    try {
-        const event = await Event.find({ profiles: req.params.profileId });
-        for (let i = 0; i < event.length; i++) {
-            event[i].profiles = await Profile.find({ _id: { $in: event[i].profiles } });
-        }
-        res.status(200).json({status: true, message: "Events fetched successfully", event });
-    } catch (error) {
-        res.status(500).json({status: false, message: "Error fetching events", error });
-    }
-});
 
 router.get("/event/:eventId", async (req, res) => {
     try {
@@ -23,7 +10,7 @@ router.get("/event/:eventId", async (req, res) => {
         if (!eventId) {
             return res.status(400).json({status: false, message: "Event ID is required" });
         }
-        const event = await Event.findById(eventId);
+        const event = await Event.findById(eventId).populate('profiles','name');
         res.status(200).json({status: true, message: "Event fetched successfully", event });
     } catch (error) {
         res.status(500).json({status: false, message: "Error fetching event", error });
@@ -47,9 +34,23 @@ router.post("/updateEvent", async (req, res) => {
         const updates = req.body;   
         const diff = [];
         for (let key in updates) {
-            if (JSON.stringify(event[key]) !== JSON.stringify(updates[key])) {
-                diff.push(key);
-                console.log(event[key], updates[key])
+            if (key === "profiles" && Array.isArray(updates[key])) {
+                if (event[key].length !== updates[key].length) {
+                    diff.push(key);
+                    continue
+                }
+                else {
+                    for ( let i = 0; i < updates[key].length; i++) {
+                        if (!event.profiles[i]._id.toString().includes(updates[key][i]._id.toString())) {
+                            diff.push(key);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                if (JSON.stringify(event[key]) !== JSON.stringify(updates[key])) {
+                    diff.push(key);
+                }
             }
         }
         Object.assign(event, {...updates, updatedAt: new Date()});

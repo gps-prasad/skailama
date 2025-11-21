@@ -7,7 +7,6 @@ import { Toaster } from 'sonner'
 
 const SoonertToastProvider = ({ children }) => {
     const toastData = useSelector((state) => state.profiles.toast);
-    console.log(toastData)
     useEffect(() => {
         if (toastData && toastData?.message) {
             switch (toastData?.type) {

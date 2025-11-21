@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -21,53 +21,66 @@ import { cn } from "@/lib/utils";
 import { useDispatch } from "react-redux";
 import { fetchProfiles, createProfile } from "../store/features/profilesSlice";
 import { useEffect } from "react";
-export const title = "With Select All Option";
+import useDebounceState from "../hooks/useDebounceState";
 
 
-const TypeHead = ({profiles,selectedValues, setSelectedValues}) => {
-    const dispatch = useDispatch();
-    const [open, setOpen] = useState(false);
-    const [createProfileName, setCreateProfileName] = useState("");
-    const [profileName, setProfileName] = useState("");
-    useEffect(() => {
-        setTimeout(() => {
-            dispatch(fetchProfiles(profileName))
-        }, 500)
-    }, [profileName])
+const TypeHead = ({profiles,selectedValues, setSelectedValues,multiSelect=true}) => {
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+  const [createProfileName, setCreateProfileName] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const debouncedProfileName = useDebounceState(profileName,500);
 
-  selectedValues = selectedValues.filter((p) => p !== "")
-  const allSelected = selectedValues.length === profiles.length;
+  useEffect(() => {
+      dispatch(fetchProfiles(debouncedProfileName))
+  }, [debouncedProfileName])
+
+  const handleSelectItems = (id) => {
+    if (!multiSelect) {
+      const profile = profiles.find((profile) => profile._id === id);
+      setSelectedValues([profile]);
+    }
+    else {
+      if (selectedValues.find((item) => item._id === id)) {
+        setSelectedValues(selectedValues.filter((item) => item._id !== id));
+      } else {
+        setSelectedValues([...selectedValues, profiles.find((profile) => profile._id === id)]);
+      }
+    }
+  }
+
+  const allSelected = typeof selectedValues !== 'Array' && selectedValues && selectedValues.length === profiles.length;
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild style={{padding:'0px 8px'}}>
         <Button
           aria-expanded={open}
-          className="w-[100%] justify-between"
+          className="min-w-[100px] w-[100%] justify-between"
           role="combobox"
           variant="outline"
         >
-          {selectedValues.length > 0
+          {multiSelect ? <>{selectedValues.length > 0
             ? `${selectedValues.length} profile(s) selected`
-            : "Select profiles..."}
+            : "Select profiles..."}</> : selectedValues.length === 0 ? 'Select profile': selectedValues[0].name}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[100%] p-0">
-        <Command>
+      <PopoverContent align="start" className="w-[100%] p-0">
+        <Command style={{padding:'4px'}}>
             <div style={{border:'1px solid #ccc',padding:'3px 5px',borderRadius:'5px'}}>
             <input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="Filter Profiles..." style={{height:'100%',width:'100%',outline:'none'}} />
             </div>
           <CommandList>
-            <CommandEmpty>No profile found.</CommandEmpty>
-            {profiles.length > 0 && <CommandGroup>
+            <CommandEmpty className="h-[40px] text-center text-muted-foreground">No profiles found.</CommandEmpty>
+            {multiSelect && profiles.length > 0 && <CommandGroup>
               <CommandItem
                 style={{padding:'5px 3px'}}
                 onSelect={() => {
                   if (allSelected) {
                     setSelectedValues([]);
                   } else {
-                    setSelectedValues(profiles.map((p) => p._id));
+                    setSelectedValues([...profiles]);
                   }
                 }}
               >
@@ -86,19 +99,13 @@ const TypeHead = ({profiles,selectedValues, setSelectedValues}) => {
                 <CommandItem
                   style={{padding:'5px 3px'}}
                   key={profile._id}
-                  onSelect={(currentValue) => {
-                    setSelectedValues(
-                      selectedValues.includes(currentValue)
-                        ? selectedValues.filter((v) => v !== currentValue)
-                        : [...selectedValues, currentValue]
-                    );
-                  }}
+                  onSelect={(value) => handleSelectItems(value)}
                   value={profile._id}
                 >
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      selectedValues.includes(profile._id)
+                      selectedValues.find((item) => item._id === profile._id)
                         ? "opacity-100"
                         : "opacity-0"
                     )}
@@ -108,11 +115,11 @@ const TypeHead = ({profiles,selectedValues, setSelectedValues}) => {
               ))}
             </CommandGroup>
           </CommandList>
-          <div className="flex">
+          <div className="flex gap-1">
             <div style={{border:'1px solid #ccc',padding:'0px 5px',borderRadius:'5px'}}>
             <input value={createProfileName} onChange={(e) => setCreateProfileName(e.target.value)} placeholder="Add Profiles..." style={{height:'100%',width:'100%',outline:'none'}} />
             </div>
-            <Button onClick={() => {dispatch(createProfile(createProfileName))}} style={{padding:'10px 5px'}}>ADD+</Button>
+            <Button size="sm" onClick={() => {dispatch(createProfile(createProfileName)); setCreateProfileName('')}} style={{padding:'10px 5px'}}>ADD+</Button>
           </div>
         </Command>
       </PopoverContent>

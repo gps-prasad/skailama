@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EventStyle from "../styles/eventForm.module.css"
 import timezones from "../constants/timeZones";
 import dayjs from "dayjs";
@@ -9,6 +9,15 @@ import TypeHead from "./TypeHead";
 import { useDispatch, useSelector } from "react-redux";
 import { createEvents } from "../store/features/eventsSlice";
 import { toast } from "sonner";
+import DateTimePicker from "./DateTimePicker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { dateTimeLocalToUTC } from "../../lib/helpers"
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -26,13 +35,12 @@ export default function EventForm({ref}) {
     })
     const onSubmit = () => {
       if (selectedProfiles.length === 0 || eventData.timezone === "" || eventData.startDate === "" || eventData.startTime === "" || eventData.endDate === "" || eventData.endTime === "") {
-        toast("Please fill all the fields")
+        toast.warning("Please fill all the fields")
         return
       }
-      const startDate = dayjs.tz(eventData.startDate + " " + eventData.startTime, eventData.timezone).utc().format();
-      const endDate = dayjs.tz(eventData.endDate + " " + eventData.endTime, eventData.timezone).utc().format();
+      const {startDate, endDate} = dateTimeLocalToUTC(eventData.startDate, eventData.startTime, eventData.endDate, eventData.endTime, eventData.timezone)
       if (startDate > endDate) {
-        toast("End date and time must be greater than start date and time")
+        toast.warning("End date and time must be greater than start date and time")
         return
       }
       const event = {
@@ -51,37 +59,34 @@ export default function EventForm({ref}) {
       <div className={EventStyle.formGroup}>
         <div className={EventStyle.formItem}>
         <label>Profiles</label>
-        <TypeHead profiles={profiles} selectedValues={selectedProfiles} setSelectedValues={setSelectedProfiles}/>
+        <TypeHead profiles={profiles} selectedValues={selectedProfiles} setSelectedValues={setSelectedProfiles} multiSelect={true}/>
         </div>
       </div>
       <div className={EventStyle.formGroup}>
         <div className={EventStyle.formItem}>
       <label>Timezone</label>
-      <select className={EventStyle.fieldInput} onChange={(e) => setEventData({...eventData, timezone: e.target.value})}>
-        {timezones.map((timezone) => (
-          <option key={timezone.value} value={timezone.value}>
-            {timezone.label}
-          </option>
-        ))}
-      </select>
+      <Select value={eventData.timezone} onValueChange={(value) => setEventData({...eventData, timezone: value})}>
+        <SelectTrigger style={{width: "100%"}}>
+          <SelectValue placeholder="Select timezone" />
+        </SelectTrigger>
+        <SelectContent>
+          {timezones.map((timezone) => (
+            <SelectItem key={timezone.value} value={timezone.value}>
+              {timezone.label}
+            </SelectItem>
+          ))}
+      </SelectContent>
+      </Select>
       </div>
       </div>
       <div className={EventStyle.formGroup}>
       <div className={EventStyle.formItem}>
-          <label>Start Date & Time</label>
-          <div className={EventStyle.formDateFieldInputs}>
-            <input type="date" max={eventData.endDate} className={EventStyle.fieldInput} onChange={(e) => setEventData({...eventData, startDate: e.target.value})}/>
-            <input type="time" max={eventData.startDate === eventData.endDate ? eventData.endTime : ""} className={EventStyle.fieldInput} onChange={(e) => setEventData({...eventData, startTime: e.target.value})}/>
-          </div>
+        <DateTimePicker label="Start Date & Time" date={eventData.startDate} time={eventData.startTime} setTime={(time) => setEventData({...eventData, startTime: time})} setDate={(date) => setEventData({...eventData, startDate: date})} dateMin={new Date()} dateMax={eventData.endDate}/>
       </div>
       </div>
       <div className={EventStyle.formGroup}></div>
       <div className={EventStyle.formItem}>
-          <label>End Date & Time</label>
-          <div className={EventStyle.formDateFieldInputs}>  
-            <input type="date" min={eventData.startDate} className={EventStyle.fieldInput} onChange={(e) => setEventData({...eventData, endDate: e.target.value})}/>
-            <input type="time" min={eventData.startDate === eventData.endDate ? eventData.startTime : ""} className={EventStyle.fieldInput} onChange={(e) => setEventData({...eventData, endTime: e.target.value})}/>
-          </div>
+        <DateTimePicker label="End Date & Time" date={eventData.endDate} time={eventData.endTime} setTime={(time) => setEventData({...eventData, endTime: time})} setDate={(date) => setEventData({...eventData, endDate: date})} dateMin={eventData.startDate}/>
       </div>
       </div>
 

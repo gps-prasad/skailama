@@ -1,5 +1,6 @@
 .card {
-    flex:1;
+    flex:1 1;
+    min-width: 300px;
     width: 100%;
     padding: 20px;
     background-color: #fff;
@@ -45,16 +46,6 @@
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
-}
-
-.formDateFieldInputs {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-}
-
-.formDateFieldInputs [type="time"] {
-    width: 30%;
 }
 
 .submitBtn {

@@ -2,27 +2,38 @@
 import EventFormStyle from "../styles/eventForm.module.css"
 import EventsStyle from "../styles/events.module.css"
 import { useState } from "react"
-import { FaUser } from "react-icons/fa"
-import { SlCalender } from "react-icons/sl";
+import { SquarePen } from 'lucide-react';
+import { Logs } from 'lucide-react';
+import { Users } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import timezones from "../constants/timeZones";
-import { GoClock } from "react-icons/go";
+import { Clock } from 'lucide-react';
 import { useSelector, useDispatch } from "react-redux";
-import { eventsActions, fetchEvent, fetchEventLogs } from "../store/features/eventsSlice";
+import { fetchEvent, fetchEventLogs } from "../store/features/eventsSlice";
 import EventLogsPopup from "./EventLogsPopup";
 import EventEditPopup from "./EventEditPopup";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
-export default function Events({ref}) {
-  const events = useSelector((state) => state.events.events);
+export default function Events({ref, events}) {
+  const [timezone, setTimezone] = useState("UTC")
   const dispatch = useDispatch()
-  const timezone = useSelector((state) => state.events.timezone);
   const [openLogsPopup, setOpenLogsPopup] = useState(false)
   const [openEditPopup, setOpenEditPopup] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState({})
+
   return (
     <>
     <div className={`${EventsStyle.card} ${EventsStyle.hidden}`} ref={ref}>
@@ -31,21 +42,26 @@ export default function Events({ref}) {
       <div className={EventFormStyle.formGroup}>
         <div className={EventFormStyle.formItem}>
         <label>View in TimeZone</label>
-        <select className={EventFormStyle.fieldInput} onChange={(e) => dispatch(eventsActions.setTimezone(e.target.value))}>
+        <Select value={timezone} onValueChange={(value) => setTimezone(value)}>
+        <SelectTrigger style={{width: "100%"}}>
+          <SelectValue placeholder="Select timezone" />
+        </SelectTrigger>
+        <SelectContent>
           {timezones.map((timezone) => (
-            <option key={timezone.value} value={timezone.value}>
+            <SelectItem key={timezone.value} value={timezone.value}>
               {timezone.label}
-            </option>
+            </SelectItem>
           ))}
-        </select>
+      </SelectContent>
+      </Select>
         </div>
       </div>
       <div className={EventsStyle.eventsContainer}>
       {events?.map((event) => (
-        <div key={event._id} className={EventFormStyle.card}>
+        <div key={event._id} className={`${EventFormStyle.card} ${EventsStyle.outline}`}>
             <div className={EventsStyle.userName}>
               <div>
-                <FaUser size={16}/>
+                <Users style={{color: "var(--color-primary)"}} size={18}/>
               </div>
                 <p>{event.profiles.map((profile) => profile.name).join(", ")}</p>
             </div>
@@ -53,17 +69,17 @@ export default function Events({ref}) {
                     <div className={EventsStyle.eventItem}>
                       <div className={EventsStyle.eventItemDetails}>
                         <div className={EventsStyle.eventItemDetailsRow}>
-                          <SlCalender/>
+                          <CalendarDays size={18}/>
                           <div>
                             <p>Start: {dayjs(event.eventStartDate).tz(timezone).format("YYYY-MM-DD")}</p>
-                            <p className={EventsStyle.eventItemDetailsTime}><GoClock size={12}/>{dayjs(event.eventStartDate).tz(timezone).format("HH:mm")}</p>
+                            <p className={EventsStyle.eventItemDetailsTime}><Clock size={12}/>{dayjs(event.eventStartDate).tz(timezone).format("HH:mm")}</p>
                           </div>
                         </div>
                         <div className={EventsStyle.eventItemDetailsRow}>
-                          <SlCalender/>
+                          <CalendarDays size={18} />
                           <div>
                             <p>End: {dayjs(event.eventEndDate).tz(timezone).format("YYYY-MM-DD")}</p>
-                            <p className={EventsStyle.eventItemDetailsTime}><GoClock size={12}/>{dayjs(event.eventEndDate).tz(timezone).format("HH:mm")}</p>
+                            <p className={EventsStyle.eventItemDetailsTime}><Clock size={12}/>{dayjs(event.eventEndDate).tz(timezone).format("HH:mm")}</p>
                           </div>
                         </div>
                       </div>
@@ -75,16 +91,16 @@ export default function Events({ref}) {
                 </div>
                 <hr/>
                 <div className={EventsStyle.eventActions}>
-                    <button onClick={() => {setOpenEditPopup(true); dispatch(fetchEvent(event._id))}}>Edit</button>
-                    <button onClick={() => {setOpenLogsPopup(true); dispatch(fetchEventLogs(event._id))}}>View Logs</button>
+                    <Button variant='outline' onClick={() => {setOpenEditPopup(true); setSelectedEvent(event)}}><SquarePen size={18}/>Edit</Button>
+                    <Button variant='outline' onClick={() => {setOpenLogsPopup(true); setSelectedEvent(event)}}><Logs size={18}/>View Logs</Button>
                 </div>
             </div>
         </div>
       ))}
       </div>
       </div>
-      <EventLogsPopup open={openLogsPopup} setOpen={setOpenLogsPopup}/>
-      <EventEditPopup open={openEditPopup} setOpen={setOpenEditPopup}/>
+      <EventLogsPopup open={openLogsPopup} setOpen={setOpenLogsPopup} event={selectedEvent}/>
+      <EventEditPopup open={openEditPopup} setOpen={setOpenEditPopup} event={selectedEvent}/>
     </div>
     </>
   );

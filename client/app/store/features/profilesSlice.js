@@ -13,7 +13,7 @@ export const createProfile = createAsyncThunk('profiles/createProfile', async (p
     if (profileName === "") {
         return rejectWithValue("Profile name is required")
     }
-    const response = await fetch('http://localhost:3001/api/profiles/addProfile', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/addProfile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,15 +24,22 @@ export const createProfile = createAsyncThunk('profiles/createProfile', async (p
     return data.profile
 })
 
-export const fetchProfiles = createAsyncThunk('profiles/getProfiles', async (profileName='') => {
-    const response = await fetch('http://localhost:3001/api/profiles/getProfiles?name=' + profileName, {
+export const fetchProfiles = createAsyncThunk('profiles/getProfiles', async (profileName='',thunkAPI) => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/getProfiles?name=${profileName}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     })
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue({ message: 'Failed to fetch profiles' })
+    }
     const data = await response.json()
     return data.profiles
+  } catch (error) {
+    return thunkAPI.rejectWithValue({message: 'error fetching profiles'})
+  }
 })
 
 export const profilesSlice = createSlice({
@@ -40,7 +47,6 @@ export const profilesSlice = createSlice({
   initialState,
   reducers: {
     setActiveProfile: (state, action) => {
-      console.log(action.payload)
       state.activeProfile = action.payload
     },
     setToast: (state, action) => {
@@ -59,7 +65,13 @@ export const profilesSlice = createSlice({
       }
     })
     builder.addCase(fetchProfiles.fulfilled,(state,action)=>{
-        state.profiles = action.payload
+      state.profiles = action.payload
+    })
+    .addCase(fetchProfiles.rejected,(state,action)=>{
+      state.toast = {
+        message: action.payload.message,
+        type: "error",
+      }
     })
     builder.addCase(createProfile.rejected,(state,action)=>{
         state.toast = {
