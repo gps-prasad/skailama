@@ -33,8 +33,8 @@ app.use('/api/profiles', Profile);
 app.use('/api/events', Events);
 app.use('/api/logs', Logs);
 
-// app.listen(port, () => {
-//     console.log(`Server listening at http://localhost:${port}`);
-// });
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`);
+});
 
 export default app;
