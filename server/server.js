@@ -15,7 +15,7 @@ const app = express();
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -35,6 +35,3 @@ app.use('/api/logs', Logs);
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
-
-
-export default app;
