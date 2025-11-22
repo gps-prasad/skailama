@@ -44,3 +44,4 @@ coverage/
 # For example, if you have a separate 'dist' or 'build' folder for your backend
 # server/dist/
 # server/build/
+.vercel
