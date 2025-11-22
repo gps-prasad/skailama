@@ -13,6 +13,7 @@ const initialState = {
       eventEndDate: ""
     }
 }
+console.log("Backend URL:", process.env.NEXT_PUBLIC_SERVER_URL);
 
 export const createEvents = createAsyncThunk('events/createEvents', async (event,thunkAPI) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/addEvent`, {
