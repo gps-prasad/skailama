@@ -9,6 +9,8 @@ RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm install -
 # Changed from node:18-alpine to node:20-alpine
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_SERVER_URL
+ENV NEXT_PUBLIC_SERVER_URL=$NEXT_PUBLIC_SERVER_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
