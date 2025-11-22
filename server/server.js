@@ -5,6 +5,7 @@ import cors from "cors";
 import Events from "./routes/eventRoute.js";
 import Profile from "./routes/profileRoute.js";
 import Logs from "./routes/logsRoute.js";
+import serverless from "serverless-http";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.options("*", cors());
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -32,6 +33,8 @@ app.use('/api/profiles', Profile);
 app.use('/api/events', Events);
 app.use('/api/logs', Logs);
 
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//     console.log(`Server listening at http://localhost:${port}`);
+// });
+
+export default app;
