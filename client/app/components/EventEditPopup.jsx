@@ -37,7 +37,7 @@ export default function EventEditPopup({open, setOpen, event}) {
     const fetchEventData = useCallback(async (eventId) => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/events/event/${eventId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/event/${eventId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default function EventEditPopup({open, setOpen, event}) {
 
     const updateEvent = useCallback(async (event) => {
       try {
-        const response = await fetch(`/api/events/updateEvent`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/updateEvent`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

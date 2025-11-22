@@ -17,7 +17,7 @@ export default function EventLogsPopup({open, setOpen,event}) {
     const fetchEventLogs = async (eventId) => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/logs/${eventId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/logs/${eventId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

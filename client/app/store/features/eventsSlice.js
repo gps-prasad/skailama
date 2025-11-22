@@ -15,7 +15,7 @@ const initialState = {
 }
 
 export const createEvents = createAsyncThunk('events/createEvents', async (event,thunkAPI) => {
-    const response = await fetch(`/api/events/addEvent`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/addEvent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export const createEvents = createAsyncThunk('events/createEvents', async (event
 })
 
 export const fetchEventLogs = createAsyncThunk('events/getEventLogs', async (eventId) => {
-  const response = await fetch(`/api/logs/${eventId}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/logs/${eventId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

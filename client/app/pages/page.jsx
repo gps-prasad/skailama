@@ -44,7 +44,7 @@ export default function Page() {
 
     const fetchEvents = useCallback(async (activeProfile) => {
         try {
-            const response = await fetch(`/api/profiles/events/${activeProfile._id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/events/${activeProfile._id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

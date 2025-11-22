@@ -13,7 +13,7 @@ export const createProfile = createAsyncThunk('profiles/createProfile', async (p
     if (profileName === "") {
         return rejectWithValue("Profile name is required")
     }
-    const response = await fetch(`/api/profiles/addProfile`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/addProfile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export const createProfile = createAsyncThunk('profiles/createProfile', async (p
 
 export const fetchProfiles = createAsyncThunk('profiles/getProfiles', async (profileName='',thunkAPI) => {
   try {
-    const response = await fetch(`/api/profiles/getProfiles?name=${profileName}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/getProfiles?name=${profileName}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
