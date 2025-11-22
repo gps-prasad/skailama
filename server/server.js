@@ -18,6 +18,12 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization","Access-Control-Allow-Origin"],
+    enablePreflight: true,
+    preflightContinue: true,
+    optionsSuccessStatus: 200,
+    credentials: true,
+    exposedHeaders: ["Content-Type", "Authorization","Access-Control-Allow-Origin"]
+    
   })
 );
 
