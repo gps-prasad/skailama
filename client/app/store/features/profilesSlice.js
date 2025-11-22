@@ -26,6 +26,8 @@ export const createProfile = createAsyncThunk('profiles/createProfile', async (p
 
 export const fetchProfiles = createAsyncThunk('profiles/getProfiles', async (profileName='',thunkAPI) => {
   try {
+    console.log("Backend URL:", process.env.NEXT_PUBLIC_SERVER_URL);
+    console.log(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/getProfiles?name=${profileName}`);
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/profiles/getProfiles?name=${profileName}`, {
       method: 'GET',
       headers: {
